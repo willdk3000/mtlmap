@@ -1,11 +1,7 @@
 import React, { Component } from 'react';
 import MapGL from 'react-map-gl';
 
-// import {
-//   getNewData, leave,
-//   getTracesSTM, getTracesSTL, getTracesRTL,
-//   getStopsSTM, getStopsRTL, getStopsSTL
-// } from '../API.js'
+ import {getSecteurs} from '../API/API'
 
 class Map extends Component {
 
@@ -20,18 +16,12 @@ class Map extends Component {
   componentDidMount = async () => {
 
     //1 - Get Required Data
-    //const getData = getNewData((err, positions) => {
-
-    //})
-
+    const secteurs = await getSecteurs();
 
     //2 - Put Data in State
-
-      // this.setState({
-      //   vehiclesSTM: vehSTM[0].data,
-      //   vehiclesSTL: vehSTL[0].data,
-      // })
-
+    this.setState({
+      secteurs
+    })
 
     const map = this.reactMap.getMap();
 
@@ -47,48 +37,40 @@ class Map extends Component {
 
 
   handleOnLoad = async (map) => {
-    let emptyGeoJSON = { "type": "FeatureCollection", "features": [] }
 
+    const { secteurs } = this.state;
+    console.log(secteurs)
+    
     map.on('load', () => {
-
-      // Add empty geojson to map on initialization to prevent mapbox error. 
-      // Map has to contain valid geojson on load
 
       // ADD SOURCES
       map.addSource(
-        "vehiculesSTM", {
+        "secteurs", {
         "type": "geojson",
-        "data": emptyGeoJSON
+        "data": secteurs
       }
       );
 
-      // For bus icons, use following symbol 0xF207 
-      // 0x characters to add to each icon
-      // F207 identifier of bus icon in fontawesome
-      // FontAwesome has to be loaded as one of the fonts in the map style (see mapbox studio)
-
       // ADD LAYERS
-      // map.addLayer(
-      //   {
-      //     "id": "position-vehicules-stm",
-      //     "type": "symbol",
-      //     "source": "vehiculesSTM",
-      //     "layout": {
-      //       'text-field': String.fromCharCode("0xF207"),
-      //       'text-font': ['Font Awesome 5 Free Solid'],
-      //       'text-size': 12
-      //     },
-      //     "paint": {
-      //       "text-color": "#009DE0"
-      //     }
-      //   }
-      // );
+       map.addLayer(
+         {
+           "id": "secteurs-sm",
+           "type": "fill",
+           "source": "secteurs",
+           'paint': {
+            'fill-color': '#8856a7',
+            'fill-outline-color': '#000000',
+            'fill-opacity': 0.5
+          }
+         }
+       );
 
       this.setState({ mapIsLoaded: true });
 
     })
-
+    
     this.map = map;
+    
   }
 
 
@@ -341,14 +323,13 @@ class Map extends Component {
 
     const { viewport } = this.state;
 
-    return <React.Fragment >
-      <div className="container-fluid">
+    return <div className="container-fluid">
         
         <MapGL
           {...viewport}
           ref={(reactMap) => this.reactMap = reactMap}
           width="100%"
-          height="85vh"
+          height="100vh"
           mapStyle="mapbox://styles/wdoucetk/cjun8whio1ha21fmzxt8knp7k"
           onViewportChange={this._onViewportChange}
           mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_KEY}
@@ -359,7 +340,7 @@ class Map extends Component {
           }
         </MapGL>
       </div>
-    </React.Fragment >
+
   }
 }
 
