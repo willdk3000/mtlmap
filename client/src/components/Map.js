@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import MapGL from 'react-map-gl';
 
- import {getSecteurs} from '../API/API'
+import { getSecteurs } from '../API/API'
 
 class Map extends Component {
 
@@ -20,7 +20,8 @@ class Map extends Component {
 
     //2 - Put Data in State
     this.setState({
-      secteurs
+      secteurs,
+      hoveredSecteur: { "type": "FeatureCollection", "features": [] }
     })
 
     const map = this.reactMap.getMap();
@@ -28,7 +29,7 @@ class Map extends Component {
     //Initialize map
     this.handleOnLoad(map)
 
-}
+  }
 
 
   componentWillUnmount = async () => {
@@ -38,10 +39,11 @@ class Map extends Component {
 
   handleOnLoad = async (map) => {
 
-    const { secteurs } = this.state;
-    console.log(secteurs)
-    
+    const { secteurs, hoveredSecteur } = this.state;
+
     map.on('load', () => {
+
+      //let emptyGeoJSON = { "type": "FeatureCollection", "features": [] }
 
       // ADD SOURCES
       map.addSource(
@@ -51,59 +53,99 @@ class Map extends Component {
       }
       );
 
+      map.addSource(
+        "secteurHighlight", {
+        "type": "geojson",
+        "data": hoveredSecteur
+      }
+      )
+
       // ADD LAYERS
-       map.addLayer(
-         {
-           "id": "secteurs-sm",
-           "type": "fill",
-           "source": "secteurs",
-           'paint': {
+      map.addLayer(
+        {
+          "id": "secteurs-sm",
+          "type": "fill",
+          "source": "secteurs",
+          'paint': {
             'fill-color': '#8856a7',
             'fill-outline-color': '#000000',
             'fill-opacity': 0.5
           }
-         }
-       );
+        }
+      );
+
+      map.addLayer(
+        {
+          "id": "secteurs-sm-highlight",
+          "type": "fill",
+          "source": "secteurHighlight",
+          'paint': {
+            'fill-color': '#fec44f',
+            'fill-outline-color': '#000000',
+            'fill-opacity': 0.5
+          }
+        }
+      );
+
+      map.addLayer(
+        {
+          "id": "secteurs-sm-highlight-line",
+          "type": "line",
+          "source": "secteurHighlight",
+          'paint': {
+            'line-width': 3,
+            'line-color': '#000000'
+          }
+        }
+      );
 
       this.setState({ mapIsLoaded: true });
 
     })
-    
+
     this.map = map;
-    
+
   }
 
 
   _onViewportChange = viewport => this.setState({ viewport });
 
 
-  // _onHover = event => {
-  //   const { features, srcEvent: { offsetX, offsetY } } = event;
+  _onHover = event => {
 
-  //   const hoveredFeatureSTM = features && features.find(f => f.layer.id === 'position-vehicules-stm');
-  //   const hoveredStopSTM = features && features.find(f => f.layer.id === 'stopsSTM');
+    const { features, srcEvent: { offsetX, offsetY } } = event;
 
-  //   const hoveredFeatureSTL = features && features.find(f => f.layer.id === 'position-vehicules-stl');
+    const hoveredSecteur = features && features.find(f => f.layer.id === 'secteurs-sm');
 
-  //   const hoveredFeatureRTL = features && features.find(f => f.layer.id === 'position-vehicules-rtl');
+    this.setState({
+      hoveredSecteur,
+      x: offsetX,
+      y: offsetY
+    });
 
-  //   const hoveredFeatureCITLA = features && features.find(f => f.layer.id === 'position-vehicules-citla');
+  };
 
-  //   const hoveredFeatureCITVR = features && features.find(f => f.layer.id === 'position-vehicules-citvr');
 
-  //   this.setState({
-  //     hoveredFeatureSTM,
-  //     hoveredStopSTM,
-  //     hoveredFeatureSTL,
-  //     hoveredFeatureRTL,
-  //     hoveredFeatureCITLA,
-  //     hoveredFeatureCITVR,
-  //     x: offsetX,
-  //     y: offsetY
-  //   });
+  componentDidUpdate = async (prevProps, prevState) => {
 
-  // };
+    const { hoveredSecteur } = this.state;
+    const { mapIsLoaded } = this.state;
 
+    if (!mapIsLoaded) {
+      return;
+    }
+
+    // Gestion highlight
+    if (hoveredSecteur !== prevState.hoveredSecteur && hoveredSecteur !== undefined) {
+      this.map.getSource("secteurHighlight").setData(hoveredSecteur);
+
+      // const vehRoutesSTM = this.state.vehiclesSTM ? this.state.vehiclesSTM.features.map((e) => {
+      //   return e.properties.route_id
+      // }) : ''
+
+    }
+
+  }
 
   // stopRequestSTM = async (trip) => {
   //   const stopsResponseSTM = await getStopsSTM(trip);
@@ -324,22 +366,22 @@ class Map extends Component {
     const { viewport } = this.state;
 
     return <div className="container-fluid">
-        
-        <MapGL
-          {...viewport}
-          ref={(reactMap) => this.reactMap = reactMap}
-          width="100%"
-          height="100vh"
-          mapStyle="mapbox://styles/wdoucetk/cjun8whio1ha21fmzxt8knp7k"
-          onViewportChange={this._onViewportChange}
-          mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_KEY}
-          //onHover={this._onHover}
-          //onClick={this._onClick}
-        >
-          {//this._renderTooltip()
-          }
-        </MapGL>
-      </div>
+
+      <MapGL
+        {...viewport}
+        ref={(reactMap) => this.reactMap = reactMap}
+        width="100%"
+        height="100vh"
+        mapStyle="mapbox://styles/wdoucetk/cjun8whio1ha21fmzxt8knp7k"
+        onViewportChange={this._onViewportChange}
+        mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_KEY}
+        onHover={this._onHover}
+      //onClick={this._onClick}
+      >
+        {//this._renderTooltip()
+        }
+      </MapGL>
+    </div>
 
   }
 }
