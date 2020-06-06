@@ -13,3 +13,14 @@ export async function uniqueListings(codesm) {
     });
     return response.json()
 }
+
+export async function avgPrice(codesm) {
+    const response = await fetch('/api/avgPrice', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ "codesm": codesm })
+    });
+    return response.json()
+}

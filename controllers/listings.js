@@ -25,6 +25,26 @@ module.exports = {
       console.log(result.rows)
       res.json(result.rows)
     });
+  },
+
+  avgPrice(req, res) {
+
+    return knex.raw(
+      `
+      WITH UL AS (
+        SELECT distinct(a.id), last_price
+        FROM fact AS a
+        JOIN secteurs AS b
+        ON ST_WITHIN(a.point_geom, b.wkb_geometry)
+        WHERE b.codesm = '${req.body.codesm}'
+      )
+      SELECT AVG(last_price)
+      FROM UL
+      `,
+    ).then(result => {
+      console.log(result.rows)
+      res.json(result.rows)
+    });
   }
 
 }

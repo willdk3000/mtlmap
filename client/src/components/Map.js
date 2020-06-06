@@ -5,7 +5,7 @@ import ReactLoading from 'react-loading';
 import HighlightsTable from './HighlightsTable'
 import AnalysisTable from './AnalysisTable'
 
-import { getSecteurs, uniqueListings } from '../API/API'
+import { getSecteurs, uniqueListings, avgPrice } from '../API/API'
 
 class Map extends Component {
 
@@ -184,10 +184,12 @@ class Map extends Component {
 
     // For bigger analysis, use on click because of delay
     const nbListings = await uniqueListings(clickedFeature.properties.id);
+    const price = await avgPrice(clickedFeature.properties.id);
 
     this.setState({
       clickedFeature,
       nbListings,
+      price,
       isFeatureLoading: 0,
       x: offsetX,
       y: offsetY,
@@ -312,7 +314,8 @@ class Map extends Component {
       return (
         <AnalysisTable
           nomSecteur={this.state.clickedFeature.properties.nom}
-          nbListings={this.state.nbListings.length} />
+          nbListings={this.state.nbListings.length}
+          avgPrice={this.state.price[0].avg} />
       )
     }
   }
@@ -320,12 +323,12 @@ class Map extends Component {
 
 
   render() {
-    const { viewport, hoveredSecteur, isHovered, nbListings } = this.state;
+    const { viewport, hoveredSecteur, isHovered, nbListings, price } = this.state;
 
     return <div className="container-fluid">
       <div className="row">
         <div className="col-2">
-          <div className="row">
+          <div className="row justify-content-center">
             <HighlightsTable
               nomSecteur={isHovered == 1 ? hoveredSecteur.properties.nom : ""}
             />

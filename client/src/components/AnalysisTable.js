@@ -1,11 +1,12 @@
 import React from 'react'
 
-const AnalysisTable = ({ nomSecteur, nbListings }) => {
+const AnalysisTable = ({ nomSecteur, nbListings, avgPrice }) => {
 
     return (
         <div className="text-center">
             <h6>{nomSecteur}</h6>
             <h6>{nbListings} propriétés</h6>
+            <h6>Prix moyen : {avgPrice.toLocaleString()}$ </h6>
         </div>
     )
 }
