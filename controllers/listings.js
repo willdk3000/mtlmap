@@ -13,6 +13,8 @@ module.exports = {
 
   uniqueListings(req, res) {
 
+    const datetime = new Date;
+
     return knex.raw(
       `
       SELECT distinct(a.id)
@@ -22,12 +24,14 @@ module.exports = {
       WHERE b.codesm = '${req.body.codesm}'
       `,
     ).then(result => {
-      console.log(result.rows)
-      res.json(result.rows)
+      console.log(datetime, result.rows);
+      res.json(result.rows);
     });
   },
 
   avgPrice(req, res) {
+
+    const datetime = new Date;
 
     return knex.raw(
       `
@@ -42,8 +46,8 @@ module.exports = {
       FROM UL
       `,
     ).then(result => {
-      console.log(result.rows)
-      res.json(result.rows)
+      console.log(datetime, result.rows);
+      res.json(result.rows);
     });
   }
 

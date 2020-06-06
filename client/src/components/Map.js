@@ -173,27 +173,32 @@ class Map extends Component {
 
   _onClick = async (event) => {
 
-    this.setState({
-      isFeatureLoading: 1
-    })
-
     const { mapIsLoaded } = this.state;
 
     const { features, srcEvent: { offsetX, offsetY } } = event;
     const clickedFeature = features && features.find(f => f.layer.id === 'secteurs-sm');
 
     // For bigger analysis, use on click because of delay
-    const nbListings = await uniqueListings(clickedFeature.properties.id);
-    const price = await avgPrice(clickedFeature.properties.id);
 
-    this.setState({
-      clickedFeature,
-      nbListings,
-      price,
-      isFeatureLoading: 0,
-      x: offsetX,
-      y: offsetY,
-    });
+    if (clickedFeature !== undefined) {
+
+      this.setState({
+        isFeatureLoading: 1
+      })
+
+      const nbListings = await uniqueListings(clickedFeature.properties.id);
+      const price = await avgPrice(clickedFeature.properties.id);
+
+      this.setState({
+        clickedFeature,
+        featureWasClicked: 1,
+        nbListings,
+        price,
+        isFeatureLoading: 0,
+        x: offsetX,
+        y: offsetY,
+      });
+    }
 
   };
 
@@ -310,7 +315,7 @@ class Map extends Component {
       return (
         <ReactLoading type={"spinningBubbles"} color={"#8856a7"} height={250} width={125} />
       )
-    } else if (this.state.clickedFeature) {
+    } else if (this.state.featureWasClicked == 1) {
       return (
         <AnalysisTable
           nomSecteur={this.state.clickedFeature.properties.nom}
@@ -327,17 +332,17 @@ class Map extends Component {
 
     return <div className="container-fluid">
       <div className="row">
-        <div className="col-2">
+        <div className="col-lg-2 col-sm-12">
           <div className="row justify-content-center">
             <HighlightsTable
               nomSecteur={isHovered == 1 ? hoveredSecteur.properties.nom : ""}
             />
           </div>
-          <div className="row justify-content-center" style={{ marginTop: "50%" }}>
+          <div className="row justify-content-center" style={{ marginTop: "30%" }}>
             {this.analysisTable()}
           </div>
         </div>
-        <div className="col-sm-10">
+        <div className="col-lg-10 col-sm-12">
           <MapGL
             {...viewport}
             ref={(reactMap) => this.reactMap = reactMap}
