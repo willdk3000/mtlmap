@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import MapGL from 'react-map-gl';
+import ReactLoading from 'react-loading';
 
-import { getSecteurs } from '../API/API'
+import HighlightsTable from './HighlightsTable'
+import AnalysisTable from './AnalysisTable'
+
+import { getSecteurs, uniqueListings } from '../API/API'
 
 class Map extends Component {
 
@@ -21,7 +25,9 @@ class Map extends Component {
     //2 - Put Data in State
     this.setState({
       secteurs,
-      hoveredSecteur: { "type": "FeatureCollection", "features": [] }
+      isFeatureLoading: 0,
+      hoveredSecteur: { "type": "FeatureCollection", "features": [] },
+      isHovered: 0
     })
 
     const map = this.reactMap.getMap();
@@ -43,7 +49,7 @@ class Map extends Component {
 
     map.on('load', () => {
 
-      //let emptyGeoJSON = { "type": "FeatureCollection", "features": [] }
+      // let emptyGeoJSON = { "type": "FeatureCollection", "features": [] }
 
       // ADD SOURCES
       map.addSource(
@@ -80,9 +86,9 @@ class Map extends Component {
           "type": "fill",
           "source": "secteurHighlight",
           'paint': {
-            'fill-color': '#fec44f',
+            'fill-color': '#000000',
             'fill-outline-color': '#000000',
-            'fill-opacity': 0.5
+            'fill-opacity': 0.6
           }
         }
       );
@@ -115,20 +121,32 @@ class Map extends Component {
 
     const { features, srcEvent: { offsetX, offsetY } } = event;
 
-    const hoveredSecteur = features && features.find(f => f.layer.id === 'secteurs-sm');
+    const hoveredFeature = features && features.find(f => f.layer.id === 'secteurs-sm');
 
-    this.setState({
-      hoveredSecteur,
-      x: offsetX,
-      y: offsetY
-    });
+    if (hoveredFeature !== undefined) {
+
+
+      this.setState({
+        hoveredSecteur: hoveredFeature,
+        isHovered: 1
+        //x: offsetX,
+        //y: offsetY
+      });
+    } else {
+      this.setState({
+        hoveredSecteur: { "type": "FeatureCollection", "features": [] },
+        isHovered: 0
+        //x: offsetX,
+        //y: offsetY
+      })
+    }
 
   };
 
 
   componentDidUpdate = async (prevProps, prevState) => {
 
-    const { hoveredSecteur } = this.state;
+    const { hoveredSecteur, isHovered } = this.state;
     const { mapIsLoaded } = this.state;
 
     if (!mapIsLoaded) {
@@ -136,121 +154,46 @@ class Map extends Component {
     }
 
     // Gestion highlight
-    if (hoveredSecteur !== prevState.hoveredSecteur && hoveredSecteur !== undefined) {
+
+    if (hoveredSecteur !== prevState.hoveredSecteur && hoveredSecteur !== undefined && isHovered == 1) {
       this.map.getSource("secteurHighlight").setData(hoveredSecteur);
 
-      // const vehRoutesSTM = this.state.vehiclesSTM ? this.state.vehiclesSTM.features.map((e) => {
-      //   return e.properties.route_id
-      // }) : ''
+      // On hover - only very short requests
 
     }
 
+    if (this.state.isHovered == 0) {
+
+    }
+
+
   }
 
-  // stopRequestSTM = async (trip) => {
-  //   const stopsResponseSTM = await getStopsSTM(trip);
-  //   const parseStopsSTM = stopsResponseSTM.rows[0].jsonb_build_object
-  //   return parseStopsSTM
-  // }
-
-  // stopRequestRTL = async (trip) => {
-  //   const stopsResponseRTL = await getStopsRTL(trip);
-  //   const parseStopsRTL = stopsResponseRTL.rows[0].jsonb_build_object
-  //   return parseStopsRTL
-  // }
-
-  // stopRequestSTL = async (trace) => {
-  //   const stopsResponseSTL = await getStopsSTL(trace);
-  //   const parseStopsSTL = stopsResponseSTL.rows[0].jsonb_build_object
-  //   return parseStopsSTL
-  // }
 
 
-  // _onClick = async (event) => {
+  _onClick = async (event) => {
 
-  //   const { mapIsLoaded } = this.state;
+    this.setState({
+      isFeatureLoading: 1
+    })
 
-  //   let emptyGeoJSON = { "type": "FeatureCollection", "features": [] }
+    const { mapIsLoaded } = this.state;
 
-  //   const { features, srcEvent: { offsetX, offsetY } } = event;
-  //   const clickedFeatureSTM = features && features.find(f => f.layer.id === 'position-vehicules-stm');
-  //   const clickedFeatureSTL = features && features.find(f => f.layer.id === 'position-vehicules-stl');
-  //   const clickedFeatureRTL = features && features.find(f => f.layer.id === 'position-vehicules-rtl');
+    const { features, srcEvent: { offsetX, offsetY } } = event;
+    const clickedFeature = features && features.find(f => f.layer.id === 'secteurs-sm');
 
+    // For bigger analysis, use on click because of delay
+    const nbListings = await uniqueListings(clickedFeature.properties.id);
 
-  //   // Identification du trip (stm, rtl) ou de la ligne (stl) cliqué
-  //   const tripClickSTM = clickedFeatureSTM ? clickedFeatureSTM.properties.trip_id : '';
-  //   const routeClickSTL = clickedFeatureSTL ? clickedFeatureSTL.properties.route_id : '';
-  //   const tripClickRTL = clickedFeatureRTL ? clickedFeatureRTL.properties.trip_id : '';
+    this.setState({
+      clickedFeature,
+      nbListings,
+      isFeatureLoading: 0,
+      x: offsetX,
+      y: offsetY,
+    });
 
-
-  //   // Détermination du shape à faire apparaître en fonction du trip ou de la ligne cliqué.
-  //   const traceSTM = this.state.tracesSTM ? this.state.tracesSTM.features.filter((e) => {
-  //     return e.properties.trips.some((f) => {
-  //       return f === tripClickSTM
-  //     })
-  //   }) : ''
-
-  //   const traceSTL = this.state.tracesSTL ? this.state.tracesSTL.features.filter((e) => {
-  //     return e.properties.route_short_name === routeClickSTL
-  //   }) : ''
-
-  //   const traceRTL = this.state.tracesRTL ? this.state.tracesRTL.features.filter((e) => {
-  //     return e.properties.trips.some((f) => {
-  //       return f === tripClickRTL
-  //     })
-  //   }) : ''
-
-
-  //   // Affichage de la trace
-  //   const clickTraceSTM = mapIsLoaded === true ? (tripClickSTM !== '' ? this.map.getSource("tracesSTM").setData(traceSTM[0])
-  //     : this.map.getSource("tracesSTM").setData(emptyGeoJSON))
-  //     : '';
-
-  //   const clickTraceSTL = mapIsLoaded === true ? (routeClickSTL !== '' ? this.map.getSource("tracesSTL").setData(traceSTL[0])
-  //     : this.map.getSource("tracesSTL").setData(emptyGeoJSON))
-  //     : '';
-
-  //   const clickTraceRTL = mapIsLoaded === true ? (tripClickRTL !== '' ? this.map.getSource("tracesRTL").setData(traceRTL[0])
-  //     : this.map.getSource("tracesRTL").setData(emptyGeoJSON))
-  //     : '';
-
-
-  //   //Requete pour obtenir les arrets a afficher selon le trip (ou la route)
-  //   const stopsSTM = tripClickSTM !== '' ? await this.stopRequestSTM(tripClickSTM) : '';
-  //   this.setState({ stopsSTM: stopsSTM })
-
-
-  //   const clickStopsSTM = mapIsLoaded === true ? (this.state.stopsSTM !== '' ? this.map.getSource("stopsSTM").setData(this.state.stopsSTM)
-  //     : this.map.getSource("stopsSTM").setData(emptyGeoJSON))
-  //     : '';
-
-  //   const stopsRTL = tripClickRTL !== '' ? await this.stopRequestRTL(tripClickRTL) : '';
-  //   this.setState({ stopsRTL: stopsRTL })
-
-
-  //   const clickStopsRTL = mapIsLoaded === true ? (this.state.stopsRTL !== '' ? this.map.getSource("stopsRTL").setData(this.state.stopsRTL)
-  //     : this.map.getSource("stopsRTL").setData(emptyGeoJSON))
-  //     : '';
-
-  //   const stopsSTL = routeClickSTL !== '' ? await this.stopRequestSTL(traceSTL[0].properties.ID) : '';
-  //   this.setState({ stopsSTL: stopsSTL })
-
-
-  //   const clickStopsSTL = mapIsLoaded === true ? (this.state.stopsSTL !== '' ? this.map.getSource("stopsSTL").setData(this.state.stopsSTL)
-  //     : this.map.getSource("stopsSTL").setData(emptyGeoJSON))
-  //     : '';
-
-
-  //   this.setState({
-  //     clickedFeatureSTM,
-  //     clickedFeatureSTL,
-  //     clickedFeatureRTL,
-  //     x: offsetX,
-  //     y: offsetY,
-  //   });
-
-  // };
+  };
 
 
   // _renderTooltip() {
@@ -360,28 +303,55 @@ class Map extends Component {
 
   // }
 
+  analysisTable() {
+    if (this.state.isFeatureLoading == 1) {
+      return (
+        <ReactLoading type={"spinningBubbles"} color={"#8856a7"} height={250} width={125} />
+      )
+    } else if (this.state.clickedFeature) {
+      return (
+        <AnalysisTable
+          nomSecteur={this.state.clickedFeature.properties.nom}
+          nbListings={this.state.nbListings.length} />
+      )
+    }
+  }
+
+
 
   render() {
-
-    const { viewport } = this.state;
+    const { viewport, hoveredSecteur, isHovered, nbListings } = this.state;
 
     return <div className="container-fluid">
-
-      <MapGL
-        {...viewport}
-        ref={(reactMap) => this.reactMap = reactMap}
-        width="100%"
-        height="100vh"
-        mapStyle="mapbox://styles/wdoucetk/cjun8whio1ha21fmzxt8knp7k"
-        onViewportChange={this._onViewportChange}
-        mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_KEY}
-        onHover={this._onHover}
-      //onClick={this._onClick}
-      >
-        {//this._renderTooltip()
-        }
-      </MapGL>
-    </div>
+      <div className="row">
+        <div className="col-2">
+          <div className="row">
+            <HighlightsTable
+              nomSecteur={isHovered == 1 ? hoveredSecteur.properties.nom : ""}
+            />
+          </div>
+          <div className="row justify-content-center" style={{ marginTop: "50%" }}>
+            {this.analysisTable()}
+          </div>
+        </div>
+        <div className="col-sm-10">
+          <MapGL
+            {...viewport}
+            ref={(reactMap) => this.reactMap = reactMap}
+            width="100%"
+            height="100vh"
+            mapStyle="mapbox://styles/wdoucetk/cjun8whio1ha21fmzxt8knp7k"
+            onViewportChange={this._onViewportChange}
+            mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_KEY}
+            onHover={this._onHover}
+            onClick={this._onClick}
+          >
+            {//this._renderTooltip()
+            }
+          </MapGL>
+        </div>
+      </div>
+    </div >
 
   }
 }

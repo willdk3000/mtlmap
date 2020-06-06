@@ -6,7 +6,7 @@ module.exports = (app) => {
 
   // LISTINGS
   app.get('/api/getlistings', listingsHandler.getAllListings);
-  //app.post('/api/allvehicles', dataHandlerController.allvehicles);
+  app.post('/api/uniqueListings', listingsHandler.uniqueListings)
 
   // SECTEURS
   app.get('/api/getsecteurs', secteursHandler.getAllSecteurs);
