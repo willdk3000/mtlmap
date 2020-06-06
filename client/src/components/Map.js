@@ -125,19 +125,20 @@ class Map extends Component {
 
     if (hoveredFeature !== undefined) {
 
-
       this.setState({
         hoveredSecteur: hoveredFeature,
-        isHovered: 1
-        //x: offsetX,
-        //y: offsetY
+        isHovered: 1,
+        x: offsetX,
+        y: offsetY
       });
+
     } else {
+
       this.setState({
         hoveredSecteur: { "type": "FeatureCollection", "features": [] },
-        isHovered: 0
-        //x: offsetX,
-        //y: offsetY
+        isHovered: 0,
+        x: offsetX,
+        y: offsetY
       })
     }
 
@@ -203,112 +204,24 @@ class Map extends Component {
   };
 
 
-  // _renderTooltip() {
+  _renderTooltip() {
 
-  //   const {
-  //     hoveredFeatureSTM,
-  //     hoveredStopSTM,
-  //     hoveredFeatureSTL,
-  //     hoveredFeatureRTL,
-  //     hoveredFeatureCITLA,
-  //     hoveredFeatureCITVR,
-  //     x, y, mapIsLoaded } = this.state;
+    const {
+      hoveredSecteur,
+      isHovered,
+      x, y, mapIsLoaded } = this.state;
 
+    //   //AFFICHAGE DES TOOLTIP ON HOVER
 
-
-  //   // Identification du trip (stm, rtl) ou de la ligne (stl) hovered
-  //   const tripHoverSTM = hoveredFeatureSTM ? hoveredFeatureSTM.properties.trip_id : '';
-  //   const routeHoverSTL = hoveredFeatureSTL ? hoveredFeatureSTL.properties.route_id : '';
-  //   const tripHoverRTL = hoveredFeatureRTL ? hoveredFeatureRTL.properties.trip_id : '';
-  //   const tripHoverCITLA = hoveredFeatureCITLA ? hoveredFeatureCITLA.properties.trip_id : '';
-  //   const tripHoverCITVR = hoveredFeatureCITVR ? hoveredFeatureCITVR.properties.trip_id : '';
-
-
-  //   //Affectation du nom du trip ou de la ligne à une variable 
-  //   const nomLigneSTM = this.state.tracesSTM ? this.state.tracesSTM.features.filter((e) => {
-  //     return e.properties.trips.some((f) => {
-  //       return f === tripHoverSTM
-  //     })
-  //   }) : ''
-
-  //   const nomLigneSTL = this.state.tracesSTL ? this.state.tracesSTL.features.filter((e) => {
-  //     return e.properties === routeHoverSTL
-  //   }) : ''
-
-  //   const nomLigneRTL = this.state.tracesRTL ? this.state.tracesRTL.features.filter((e) => {
-  //     return e.properties.trips.some((f) => {
-  //       return f === tripHoverRTL
-  //     })
-  //   }) : ''
-
-  //   const nomLigneCITLA = this.state.tracesCITLA ? this.state.tracesCITLA.features.filter((e) => {
-  //     return e.properties.trips.some((f) => {
-  //       return f === tripHoverCITLA
-  //     })
-  //   }) : ''
-
-  //   const nomLigneCITVR = this.state.tracesCITVR ? this.state.tracesCITVR.features.filter((e) => {
-  //     return e.properties.trips.some((f) => {
-  //       return f === tripHoverCITVR
-  //     })
-  //   }) : ''
-
-
-
-  //   //AFFICHAGE DES TOOLTIP ON HOVER
-
-  //   return hoveredFeatureSTM ?
-  //     hoveredFeatureSTM && (
-  //       //ne pas appeler la class 'tooltip' car il semble que ce nom soit en conflit
-  //       //avec un autre tooltip...
-  //       <div className="mapToolTip" style={{ left: x, top: y }}>
-  //         <div>Véhicule: {hoveredFeatureSTM.properties.vehicle_id}</div>
-  //         <div>Ligne: {hoveredFeatureSTM.properties.route_id}</div>
-  //         {/*<div>Axe: {nomLigneSTM[0].properties.route_name ? nomLigneSTM[0].properties.route_name : ''}</div>*/}
-  //         <div>Trip ID: {hoveredFeatureSTM.properties.trip_id}</div>
-  //         <div>Mise à jour: {hoveredFeatureSTM.properties.timestamp ? hoveredFeatureSTM.properties.timestamp : ''} s</div>
-  //       </div>
-  //     ) :
-  //     hoveredFeatureSTL ?
-  //       hoveredFeatureSTL && (
-  //         <div className="mapToolTip" style={{ left: x, top: y }}>
-  //           <div>Véhicule: {hoveredFeatureSTL.properties.vehicle_id}</div>
-  //           <div>Ligne: {hoveredFeatureSTL.properties.route_id}</div>
-  //           <div>Mise à jour: {hoveredFeatureSTL.properties.last_connection} s</div>
-  //         </div>
-  //       ) :
-  //       hoveredFeatureRTL ?
-  //         hoveredFeatureRTL && (
-  //           <div className="mapToolTip" style={{ left: x, top: y }}>
-  //             <div>Véhicule: {hoveredFeatureRTL.properties.vehicle_id}</div>
-  //             <div>Ligne: {hoveredFeatureRTL.properties.route_id}</div>
-  //             {/*<div>Axe: {nomLigneRTL ? nomLigneRTL[0].properties.route_name : ''}</div>*/}
-  //             <div>Trip ID: {hoveredFeatureRTL.properties.trip_id}</div>
-  //             <div>Mise à jour: {hoveredFeatureRTL.properties.timestamp ? hoveredFeatureRTL.properties.timestamp : ''} s</div>
-  //           </div>
-  //         ) :
-  //         hoveredFeatureCITLA ?
-  //           hoveredFeatureCITLA && (
-  //             <div className="mapToolTip" style={{ left: x, top: y }}>
-  //               <div>Véhicule: {hoveredFeatureCITLA.properties.vehicle_id}</div>
-  //               <div>Ligne: {hoveredFeatureCITLA.properties.route_id}</div>
-  //               {/*<div>Axe: {nomLigneRTL ? nomLigneRTL[0].properties.route_name : ''}</div>*/}
-  //               <div>Trip ID: {hoveredFeatureCITLA.properties.trip_id}</div>
-  //               <div>Mise à jour: {hoveredFeatureCITLA.properties.timestamp ? hoveredFeatureCITLA.properties.timestamp : ''} s</div>
-  //             </div>
-  //           ) :
-  //           hoveredFeatureCITVR ?
-  //             hoveredFeatureCITVR && (
-  //               <div className="mapToolTip" style={{ left: x, top: y }}>
-  //                 <div>Véhicule: {hoveredFeatureCITVR.properties.vehicle_id}</div>
-  //                 <div>Ligne: {hoveredFeatureCITVR.properties.route_id}</div>
-  //                 {/*<div>Axe: {nomLigneRTL ? nomLigneRTL[0].properties.route_name : ''}</div>*/}
-  //                 <div>Trip ID: {hoveredFeatureCITVR.properties.trip_id}</div>
-  //                 <div>Mise à jour: {hoveredFeatureCITVR.properties.timestamp ? hoveredFeatureCITVR.properties.timestamp : ''} s</div>
-  //               </div>
-  //             ) : ''
-
-  // }
+    return hoveredSecteur && isHovered == 1 ?
+      hoveredSecteur && (
+        //ne pas appeler la class 'tooltip' car il semble que ce nom soit en conflit
+        //avec un autre tooltip...
+        <div className="mapToolTip" style={{ left: x, top: y }}>
+          <div>{hoveredSecteur.properties.nom}</div>
+        </div>
+      ) : ''
+  }
 
   analysisTable() {
     if (this.state.isFeatureLoading == 1) {
@@ -354,8 +267,7 @@ class Map extends Component {
             onHover={this._onHover}
             onClick={this._onClick}
           >
-            {//this._renderTooltip()
-            }
+            {this._renderTooltip()}
           </MapGL>
         </div>
       </div>
