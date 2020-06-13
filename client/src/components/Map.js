@@ -5,7 +5,8 @@ import ReactLoading from 'react-loading';
 import HighlightsTable from './HighlightsTable'
 import AnalysisTable from './AnalysisTable'
 
-import { getSecteurs, uniqueListings, avgPrice } from '../API/API'
+import { getSecteurs, uniqueListingsPrice } from '../API/API'
+import { averagePrice } from '../helpers/averagePrice'
 
 class Map extends Component {
 
@@ -156,14 +157,14 @@ class Map extends Component {
 
     // Gestion highlight
 
-    if (hoveredSecteur !== prevState.hoveredSecteur && hoveredSecteur !== undefined && isHovered == 1) {
+    if (hoveredSecteur !== prevState.hoveredSecteur && hoveredSecteur !== undefined && isHovered === 1) {
       this.map.getSource("secteurHighlight").setData(hoveredSecteur);
 
       // On hover - only very short requests
 
     }
 
-    if (this.state.isHovered == 0) {
+    if (this.state.isHovered === 0) {
 
     }
 
@@ -174,7 +175,7 @@ class Map extends Component {
 
   _onClick = async (event) => {
 
-    const { mapIsLoaded } = this.state;
+    //const { mapIsLoaded } = this.state;
 
     const { features, srcEvent: { offsetX, offsetY } } = event;
     const clickedFeature = features && features.find(f => f.layer.id === 'secteurs-sm');
@@ -187,14 +188,17 @@ class Map extends Component {
         isFeatureLoading: 1
       })
 
-      const nbListings = await uniqueListings(clickedFeature.properties.id);
-      const price = await avgPrice(clickedFeature.properties.id);
+      // Unique listings and average price
+      const listings = await uniqueListingsPrice(clickedFeature.properties.id);
+      const avgPrice = await averagePrice(listings);
+
+
 
       this.setState({
         clickedFeature,
         featureWasClicked: 1,
-        nbListings,
-        price,
+        listings,
+        avgPrice,
         isFeatureLoading: 0,
         x: offsetX,
         y: offsetY,
@@ -209,11 +213,11 @@ class Map extends Component {
     const {
       hoveredSecteur,
       isHovered,
-      x, y, mapIsLoaded } = this.state;
+      x, y } = this.state;
 
     //   //AFFICHAGE DES TOOLTIP ON HOVER
 
-    return hoveredSecteur && isHovered == 1 ?
+    return hoveredSecteur && isHovered === 1 ?
       hoveredSecteur && (
         //ne pas appeler la class 'tooltip' car il semble que ce nom soit en conflit
         //avec un autre tooltip...
@@ -224,16 +228,16 @@ class Map extends Component {
   }
 
   analysisTable() {
-    if (this.state.isFeatureLoading == 1) {
+    if (this.state.isFeatureLoading === 1) {
       return (
         <ReactLoading type={"spinningBubbles"} color={"#8856a7"} height={250} width={125} />
       )
-    } else if (this.state.featureWasClicked == 1) {
+    } else if (this.state.featureWasClicked === 1) {
       return (
         <AnalysisTable
           nomSecteur={this.state.clickedFeature.properties.nom}
-          nbListings={this.state.nbListings.length}
-          avgPrice={this.state.price[0].avg} />
+          nbListings={this.state.listings.length}
+          avgPrice={this.state.avgPrice} />
       )
     }
   }
@@ -241,17 +245,17 @@ class Map extends Component {
 
 
   render() {
-    const { viewport, hoveredSecteur, isHovered, nbListings, price } = this.state;
+    const { viewport, hoveredSecteur, isHovered } = this.state;
 
     return <div className="container-fluid">
       <div className="row">
         <div className="col-lg-2 col-sm-12">
           <div className="row justify-content-center">
             <HighlightsTable
-              nomSecteur={isHovered == 1 ? hoveredSecteur.properties.nom : ""}
+              nomSecteur={isHovered === 1 ? hoveredSecteur.properties.nom : ""}
             />
           </div>
-          <div className="row justify-content-center" style={{ marginTop: "30%" }}>
+          <div className="row justify-content-center" style={{ marginTop: "10%" }}>
             {this.analysisTable()}
           </div>
         </div>

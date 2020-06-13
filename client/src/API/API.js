@@ -3,19 +3,8 @@ export async function getSecteurs() {
     return response.json();
 };
 
-export async function uniqueListings(codesm) {
+export async function uniqueListingsPrice(codesm) {
     const response = await fetch('/api/uniqueListings', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ "codesm": codesm })
-    });
-    return response.json()
-}
-
-export async function avgPrice(codesm) {
-    const response = await fetch('/api/avgPrice', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
