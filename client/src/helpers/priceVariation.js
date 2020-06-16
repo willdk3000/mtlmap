@@ -1,5 +1,9 @@
 export function priceVariation(data) {
 
+    if (!data.length) {
+        return data;
+    }
+
     if (data[0].mean_price - data[1].mean_price >= 0) {
         return (
             '+' + (Math.round((data[0].mean_price - data[1].mean_price) / 1000) * 1000).toLocaleString() + '$'
@@ -15,6 +19,10 @@ export function priceVariation(data) {
 
 
 export function type_priceVariation(data) {
+
+    if (!data.length) {
+        return data;
+    }
 
     const variations = [];
 

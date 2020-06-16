@@ -262,7 +262,7 @@ class Map extends Component {
 
     return <div className="container-fluid">
       <div className="row">
-        <div className="col-lg-2 col-sm-12">
+        <div className="col-lg-3 col-sm-12">
           <div className="row justify-content-center">
             <h2>Prix de l'immobilier</h2>
             <h4>Multilogements</h4>
@@ -271,7 +271,7 @@ class Map extends Component {
             {this.analysisTable()}
           </div>
         </div>
-        <div className="col-lg-10 col-sm-12">
+        <div className="col-lg-9 col-sm-12">
           <MapGL
             {...viewport}
             ref={(reactMap) => this.reactMap = reactMap}
