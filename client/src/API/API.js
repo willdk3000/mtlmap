@@ -13,3 +13,25 @@ export async function uniqueListingsPrice(codesm) {
     });
     return response.json()
 }
+
+export async function monthlyStats(codesm) {
+    const response = await fetch('/api/monthlyStats', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ "codesm": codesm })
+    });
+    return response.json()
+}
+
+export async function typeMonthlyStats(codesm) {
+    const response = await fetch('/api/typeMonthlyStats', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ "codesm": codesm })
+    });
+    return response.json()
+}

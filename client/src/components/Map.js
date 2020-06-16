@@ -2,11 +2,12 @@ import React, { Component } from 'react';
 import MapGL from 'react-map-gl';
 import ReactLoading from 'react-loading';
 
-import HighlightsTable from './HighlightsTable'
-import AnalysisTable from './AnalysisTable'
+import MonthlyTable from './MonthlyTable';
+import AnalysisTable from './AnalysisTable';
 
-import { getSecteurs, uniqueListingsPrice } from '../API/API'
-import { averagePrice } from '../helpers/averagePrice'
+import { getSecteurs, uniqueListingsPrice, monthlyStats, typeMonthlyStats } from '../API/API';
+import { averagePrice } from '../helpers/averagePrice';
+import { priceVariation, type_priceVariation } from '../helpers/priceVariation';
 
 class Map extends Component {
 
@@ -188,17 +189,23 @@ class Map extends Component {
         isFeatureLoading: 1
       })
 
-      // Unique listings and average price
+      // Get Data
       const listings = await uniqueListingsPrice(clickedFeature.properties.id);
+      const monthly = await monthlyStats(clickedFeature.properties.id);
+      const type_monthly = await typeMonthlyStats(clickedFeature.properties.id);
+
+      // Transform Data
       const avgPrice = await averagePrice(listings);
-
-
+      const monthVariation = await priceVariation(monthly);
+      const typeMonthVariation = await type_priceVariation(type_monthly);
 
       this.setState({
         clickedFeature,
         featureWasClicked: 1,
         listings,
         avgPrice,
+        monthVariation,
+        typeMonthVariation,
         isFeatureLoading: 0,
         x: offsetX,
         y: offsetY,
@@ -234,26 +241,31 @@ class Map extends Component {
       )
     } else if (this.state.featureWasClicked === 1) {
       return (
-        <AnalysisTable
-          nomSecteur={this.state.clickedFeature.properties.nom}
-          nbListings={this.state.listings.length}
-          avgPrice={this.state.avgPrice} />
+        <React.Fragment>
+          <AnalysisTable
+            nomSecteur={this.state.clickedFeature.properties.nom}
+            avgPrice={this.state.avgPrice}
+            typeMonthVariation={this.state.typeMonthVariation}
+          />
+          <MonthlyTable
+            monthVariation={this.state.monthVariation}
+            typeMonthVariation={this.state.typeMonthVariation}
+          />
+        </React.Fragment>
       )
     }
   }
 
 
-
   render() {
-    const { viewport, hoveredSecteur, isHovered } = this.state;
+    const { viewport } = this.state;
 
     return <div className="container-fluid">
       <div className="row">
         <div className="col-lg-2 col-sm-12">
           <div className="row justify-content-center">
-            <HighlightsTable
-              nomSecteur={isHovered === 1 ? hoveredSecteur.properties.nom : ""}
-            />
+            <h2>Prix de l'immobilier</h2>
+            <h4>Multilogements</h4>
           </div>
           <div className="row justify-content-center" style={{ marginTop: "10%" }}>
             {this.analysisTable()}
